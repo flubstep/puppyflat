@@ -1,3 +1,4 @@
+-- todo: possibly put this into a global gamespace or something?
 world = nil
 scale = 2
 m = 32

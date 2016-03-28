@@ -17,7 +17,11 @@ end
 
 function GameScore:draw()
   love.graphics.setColor(0, 0, 0)
-  self.text:set("Eggplants: " .. self.score)
+  if self.score == 1 then
+    self.text:set("Eggplant: " .. self.score)
+  else
+    self.text:set("Eggplants: " .. self.score)
+  end
   -- todo: this scale factor should be calculated independently of the global scale
   -- since arbitrary font sizes result in anti-aliasing
   love.graphics.draw(self.text, 30, 30, 0, 3, 3)
