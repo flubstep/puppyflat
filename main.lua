@@ -6,6 +6,7 @@ objectSpeed = 10*m
 screenWidth = 800
 screenHeight = 600
 
+tween = require('vendor/tween')
 
 require('tiledscroller')
 require('eggplant')
@@ -109,13 +110,13 @@ end
 function love.draw()
   backgroundTiles:draw()
   floorTiles:draw()
-  puppycat:draw()
   if gameStarted then
     EggplantManager.draw()
     gameScore:draw()
   else
     startMenu:draw()
   end
+  puppycat:draw()
 end
 
 

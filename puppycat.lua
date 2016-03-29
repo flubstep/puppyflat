@@ -13,6 +13,8 @@ local padding = 5
 local borderWidth = 1 * scale
 local borderRadius = 0
 
+local usingFlash = false
+
 Puppycat = {}
 
 function Puppycat:new(o)
@@ -45,6 +47,11 @@ function Puppycat:new(o)
   o.touchingGround = false
   o.holdingJump = false
   o.jumpVelocity = 0
+
+  -- todo: move these to their own objects
+  o.showFlash = false
+  o.flashTween = nil
+  o.flashRadius = 0
   return o
 end
 
@@ -63,6 +70,9 @@ function Puppycat:update(dt)
   if self.holdingJump then
     self.jumpVelocity = math.min(self.jumpVelocity + dt*chargeSpeed, maxVelocity)
   end
+  if self.flashTween then
+    self.showFlash = not self.flashTween:update(dt)
+  end
 end
 
 function Puppycat:draw()
@@ -76,10 +86,28 @@ function Puppycat:draw()
     end
   end
 
+  self:drawFlash()
   self.animation:draw(self.sheet, self.body:getX(), self.body:getY(), 0, self.scale, self.scale)
   self:drawJumpPower()
 end
 
+function Puppycat:getCenter()
+  local x = self.body:getX() + self.image:getWidth()*scale/2
+  local y = self.body:getY() + self.image:getHeight()*scale/2
+  return x, y
+end
+
+function Puppycat:drawFlash()
+  if self.showFlash then
+    love.graphics.setColor(158, 60, 185)
+    local x, y = self:getCenter()
+    local flash = love.graphics.circle("line",
+      x, y,
+      self.flashRadius, 100
+      )
+    love.graphics.setColor(255, 255, 255)
+  end
+end
 
 function Puppycat:drawJumpPower()
   if self.holdingJump then
@@ -101,7 +129,6 @@ function Puppycat:drawJumpPower()
       barWidth-2*borderWidth, barHeight-2*borderWidth,
       borderRadius, borderRadius
     )
-
     love.graphics.setColor(255, 255, 255)
   end
 end
@@ -111,11 +138,19 @@ function Puppycat:onCollisionBegin(other)
   if data.tag == "Eggplant" then
     gameScore:increment()
     self.collectSound:play()
+    self:startFlash()
     --updateSpeed(objectSpeed + 0.5*m)
   end
   if data.tag == "Floor" then
     self.touchingGround = true
     self.animation:resume()
+  end
+end
+
+function Puppycat:startFlash()
+  if usingFlash then
+    self.flashRadius = 0
+    self.flashTween = tween.new(0.1, self, {flashRadius=20*scale}, "linear")
   end
 end
 

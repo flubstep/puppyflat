@@ -4,6 +4,8 @@ local spawnMin = 100
 local spawnMax = 500
 local interval = 100
 
+local usingFlash = true
+
 EggplantManager = {}
 
 function EggplantManager.create()
@@ -84,9 +86,15 @@ function Eggplant:new(o)
   o.fixture:setUserData({tag="Eggplant", gameObject=o})
   o.fixture:setSensor(true)
 
+  font = love.graphics.newFont('assets/PressStart2P.ttf', 16)
+  o.text = love.graphics.newText(font, "+1")
+
   o.body:setMass(0)
   o.body:setLinearVelocity(-o.speed, 0)
   o.body:setGravityScale(0)
+
+  o.flashTween = nil
+  o.flashRadius = 0
 
   return o
 end
@@ -95,16 +103,47 @@ function Eggplant:update(dt)
   if self.body:getX() < -100 then
     self:destroy()
   end
-end
-
-function Eggplant:draw()
-  if self.active then
-    love.graphics.draw(self.image, self.body:getX(), self.body:getY(), 0, scale, scale)
+  if self.flashTween then
+    if self.flashTween:update(dt) then
+      self:destroy()
+    end
   end
 end
 
+function Eggplant:centerX()
+  return self.body:getX() + self.image:getWidth()*scale/2
+end
+
+function Eggplant:centerY()
+  return self.body:getY() + self.image:getHeight()*scale/2
+end
+
+function Eggplant:draw()
+  local squareSize = 6*scale
+  if self.active then
+    if self.flashTween then
+      love.graphics.setColor(0, 0, 0)
+      love.graphics.draw(self.text, self:centerX(), self:centerY()-self.flashRadius)
+      love.graphics.setColor(255, 255, 255)
+    else
+      love.graphics.draw(self.image, self.body:getX(), self.body:getY(), 0, scale, scale)
+    end
+  end
+end
+
+function Eggplant:startFlash()
+  local flashFrom = 0*scale
+  local flashTo = 16*scale
+  self.flashRadius = flashFrom
+  self.flashTween = tween.new(0.45, self, {flashRadius=flashTo}, "outQuart")
+end
+
 function Eggplant:onCollisionBegin(other)
-  self:destroy()
+  if usingFlash then
+    self:startFlash()
+  else
+    self:destroy()
+  end
 end
 
 function Eggplant:destroy()

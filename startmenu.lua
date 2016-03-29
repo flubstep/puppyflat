@@ -1,5 +1,3 @@
-local tween = require('vendor/tween')
-
 local blinkInterval = 0.5
 
 StartMenu = {}
