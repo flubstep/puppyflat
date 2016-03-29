@@ -60,6 +60,6 @@ function StartMenu:hide()
 end
 
 function drawCentered(text, y)
-  local startX = (800 - text:getWidth()*scale) / 2
+  local startX = (screenWidth - text:getWidth()*scale) / 2
   love.graphics.draw(text, startX, y, 0, scale, scale)
 end

@@ -5,7 +5,8 @@ local playerHeight = 28
 local minVelocity = 10*m
 local maxVelocity = 36*m
 local chargeSpeed = 48*m
-local startX = 180
+local startX = screenWidth / 4
+local startY = screenHeight * 3 / 4
 
 local barHeight = 5 * scale
 local padding = 5
@@ -25,8 +26,11 @@ function Puppycat:new(o)
   g = anim8.newGrid(playerWidth, playerHeight, o.sheet:getWidth(), o.sheet:getHeight())
   o.animation = anim8.newAnimation(g('1-4',1), 0.1)
 
-  o.body = love.physics.newBody(world, 0, 480, "dynamic")
+  o.body = love.physics.newBody(world, 0, startY, "dynamic")
   o.body:setGravityScale(4.2)
+
+  o.jumpSound = love.audio.newSource("assets/jump.wav", "static")
+  o.collectSound = love.audio.newSource("assets/collect.wav", "static")
 
   -- make the rectangle line up with where we will draw the cat
   o.shape = love.physics.newRectangleShape(
@@ -106,6 +110,7 @@ function Puppycat:onCollisionBegin(other)
   local data = other:getUserData()
   if data.tag == "Eggplant" then
     gameScore:increment()
+    self.collectSound:play()
     --updateSpeed(objectSpeed + 0.5*m)
   end
   if data.tag == "Floor" then
@@ -134,5 +139,6 @@ function Puppycat:releaseJump()
     self.body:setLinearVelocity(0, -self.jumpVelocity)
     self.jumpVelocity = minVelocity
     self.holdingJump = false
+    self.jumpSound:play()
   end
 end

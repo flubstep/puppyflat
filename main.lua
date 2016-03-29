@@ -3,6 +3,8 @@ world = nil
 scale = 2
 m = 32
 objectSpeed = 10*m
+screenWidth = 800
+screenHeight = 600
 
 
 require('tiledscroller')
@@ -18,6 +20,7 @@ backgroundTiles = nil
 gameScore = nil
 startMenu = nil
 gameStarted = false
+backgroundMusic = nil
 
 function love.load()
   love.window.setTitle("Puppyflap/Fluppycat")
@@ -77,6 +80,10 @@ function love.load()
 
   -- initialize start menu
   startMenu = StartMenu:new{active=true}
+
+  -- background music
+  backgroundMusic = love.audio.newSource("assets/morera_-_i_pray_original_mix.mp3")
+  backgroundMusic:play()
 
   -- set the collision callback.
   world:setCallbacks(onContactBegin, onContactEnd)
