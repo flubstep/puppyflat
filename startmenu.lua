@@ -9,7 +9,7 @@ function StartMenu:new(o)
   setmetatable(o, self)
   self.__index = self
 
-  local titleFont = love.graphics.newFont('assets/PressStart2P.ttf', 16)
+  local titleFont = love.graphics.newFont('assets/PressStart2P.ttf', 24)
   local selectFont = love.graphics.newFont('assets/PressStart2P.ttf', 8)
 
   o.titleText = love.graphics.newText(titleFont, "Puppyflat")
@@ -20,6 +20,7 @@ function StartMenu:new(o)
   o.offsetY = -220
   o.tween = nil
 
+  o.ready = false
   o.hidden = true
   o.shownTime = 0
 
@@ -33,7 +34,7 @@ function StartMenu:update(dt)
     self:show()
   end
   if self.tween then
-    self.tween:update(dt)
+    self.ready = self.tween:update(dt)
   end
 end
 
@@ -42,7 +43,7 @@ function StartMenu:draw()
     love.graphics.setColor(0, 0, 0)
     drawCentered(self.titleText, self.titleY + self.offsetY)
     -- todo: this is a terrible hack
-    if math.floor(self.shownTime / blinkInterval) % 2 == 0 then
+    if math.floor(self.shownTime / blinkInterval) % 2 == 0 and self.ready then
       drawCentered(self.selectText, self.selectY + self.offsetY)
     end
     love.graphics.setColor(255, 255, 255)
