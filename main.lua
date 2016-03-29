@@ -24,7 +24,7 @@ gameStarted = false
 backgroundMusic = nil
 
 function love.load()
-  love.window.setTitle("Puppyflap/Fluppycat")
+  love.window.setTitle("Puppyflat")
 
   -- remove anti-aliasing
   love.graphics.setDefaultFilter("nearest", "nearest")
