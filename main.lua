@@ -122,6 +122,9 @@ end
 -- todo: have event listeners for these? doesn't make sense to have
 -- it all defined in the global scope
 function love.keypressed(key, scancode, isrepeat)
+  if key == 'escape' then
+    love.event.push('quit')
+  end
   if key == "space" and not startMenu.hidden and not gameStarted then
     startGame()
   elseif gameStarted and (key == "space" or key == "up") then

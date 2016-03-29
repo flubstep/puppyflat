@@ -16,8 +16,8 @@ function StartMenu:new(o)
   o.selectText = love.graphics.newText(selectFont, "Press space!")
 
   o.titleY = 160
-  o.selectY = 220
-  o.offsetY = -220
+  o.selectY = 230
+  o.offsetY = -230
   o.tween = nil
 
   o.ready = false
