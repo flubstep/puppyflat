@@ -3,7 +3,7 @@ world = nil
 scale = 2
 m = 32
 objectSpeed = 10*m
-screenWidth = 800
+screenWidth = 600
 screenHeight = 600
 
 tween = require('vendor/tween')
