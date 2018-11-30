@@ -1,6 +1,6 @@
 -- todo: possibly put this into a global gamespace or something?
 world = nil
-scale = 4
+scale = 2
 m = 32
 objectSpeed = 10*m
 screenWidth = 600
