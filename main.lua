@@ -45,7 +45,7 @@ function love.load()
 
   floorTiles = TiledScroller:new{
     image=floor,
-    count=12,
+    count=20,
     startX=0,
     startY=floorY,
     speed=objectSpeed
@@ -67,7 +67,7 @@ function love.load()
   background = love.graphics.newImage("assets/background.png")
   backgroundTiles = TiledScroller:new{
     image=background,
-    count=4,
+    count=12,
     startX=0,
     startY=0,
     speed=1*m
