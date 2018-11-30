@@ -83,8 +83,8 @@ function love.load()
   startMenu = StartMenu:new{active=true}
 
   -- background music
-  backgroundMusic = love.audio.newSource("assets/morera_-_i_pray_original_mix.mp3")
-  backgroundMusic:play()
+  -- backgroundMusic = love.audio.newSource("assets/morera_-_i_pray_original_mix.mp3")
+  -- backgroundMusic:play()
 
   -- set the collision callback.
   world:setCallbacks(onContactBegin, onContactEnd)
