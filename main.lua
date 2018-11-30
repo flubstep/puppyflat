@@ -1,10 +1,10 @@
 -- todo: possibly put this into a global gamespace or something?
 world = nil
-scale = 2
+scale = 4
 m = 32
 objectSpeed = 10*m
-screenWidth = 1200
-screenHeight = 1200
+screenWidth = 600
+screenHeight = 600
 
 tween = require('vendor/tween')
 
