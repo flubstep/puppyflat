@@ -3,8 +3,8 @@ world = nil
 scale = 2
 m = 32
 objectSpeed = 10*m
-screenWidth = 800
-screenHeight = 800
+screenWidth = 1200
+screenHeight = 1200
 
 tween = require('vendor/tween')
 
@@ -45,7 +45,7 @@ function love.load()
 
   floorTiles = TiledScroller:new{
     image=floor,
-    count=60,
+    count=12,
     startX=0,
     startY=floorY,
     speed=objectSpeed
