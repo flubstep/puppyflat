@@ -3,8 +3,11 @@ world = nil
 scale = 2
 m = 32
 objectSpeed = 10*m
-screenWidth = 600
+
+screenWidth = 1000
 screenHeight = 600
+marginBottom = 200
+marginTop = 200
 
 tween = require('vendor/tween')
 
@@ -28,7 +31,7 @@ function love.load()
 
   -- remove anti-aliasing
   love.graphics.setDefaultFilter("nearest", "nearest")
-  love.graphics.setBackgroundColor(255, 255, 255)
+  love.graphics.setBackgroundColor(0, 0, 0)
   love.physics.setMeter(m)
 
   -- todo: don't make it a global
@@ -41,7 +44,8 @@ function love.load()
   local floor = love.graphics.newImage("assets/floor.png")
   local floorWidth = love.graphics:getWidth()
   local floorHeight = floor:getHeight()*scale
-  local floorY = love.graphics:getHeight() - floorHeight
+  -- local floorY = love.graphics:getHeight() - floorHeight
+  local floorY = screenHeight - floorHeight
 
   floorTiles = TiledScroller:new{
     image=floor,
