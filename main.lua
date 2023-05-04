@@ -4,7 +4,7 @@ scale = 2
 m = 32
 objectSpeed = 10*m
 
-screenWidth = 1000
+screenWidth = 800
 screenHeight = 600
 marginBottom = 200
 marginTop = 200

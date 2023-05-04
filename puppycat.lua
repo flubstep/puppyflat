@@ -5,7 +5,7 @@ local playerHeight = 28
 local minVelocity = 10*m
 local maxVelocity = 36*m
 local chargeSpeed = 48*m
-local startX = screenWidth / 4
+local startX = screenWidth / 6
 local startY = screenHeight * 3 / 4
 
 local barHeight = 5 * scale
