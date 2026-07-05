@@ -185,3 +185,8 @@ function onContactEnd(a, b, coll)
     bObject:onCollisionEnd(a)
   end
 end
+
+
+-- must come after the love callbacks are defined so it can wrap them;
+-- no-op unless --playtest is passed on the command line
+require('playtest')
