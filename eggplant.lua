@@ -1,35 +1,52 @@
 -- Singleton EggplantManager
-
-local spawnMin = 100
-local spawnMax = 500
-local interval = 100
+--
+-- Eggplants spawn in volleys placed along a jump arc: pick a jump
+-- power the player can reach, then lay the eggplants on the parabola
+-- the cat traces (relative to the scrolling world) when jumping with
+-- exactly that power. Since every eggplant scrolls left at the same
+-- speed, the arc keeps its shape, and one well-timed jump grabs the
+-- whole volley.
 
 local usingFlash = true
+
+-- fraction of the jump's flight time covered by the first and last
+-- eggplant of a volley (endpoints sit at ground level, so inset a bit)
+local arcStart = 0.12
+local arcEnd = 0.88
+-- keep arcs below the max jump so a full-power jump clears the apex
+local arcMaxPower = 0.95
+-- arcs with less curve than this are trivial hops; reroll them
+local minArcLength = 240
+-- seconds of breathing room between one arc leaving and the next arriving
+local gapMin = 1.0
+local gapMax = 2.0
 
 EggplantManager = {}
 
 function EggplantManager.create()
   EggplantManager.index = 1
   EggplantManager.eggplants = {}
-  EggplantManager.nextSpawnTime = os.time() + 1
+  EggplantManager.arcs = {}
+  EggplantManager.clock = 0
+  EggplantManager.spawnTimer = 1
   EggplantManager.image = love.graphics.newImage("assets/eggplant.png")
 end
 
 function EggplantManager.update(dt)
-  -- spawn new eggplant every second
-  local t = os.time()
-  if t >= EggplantManager.nextSpawnTime then
+  EggplantManager.clock = EggplantManager.clock + dt
 
-    EggplantManager.nextSpawnTime = t + 1
-    id = "id"..EggplantManager.index
-    EggplantManager.index = EggplantManager.index + 1    
+  EggplantManager.spawnTimer = EggplantManager.spawnTimer - dt
+  if EggplantManager.spawnTimer <= 0 then
+    local flightTime = EggplantManager.spawnArc()
+    EggplantManager.spawnTimer =
+      flightTime + gapMin + (gapMax - gapMin)*love.math.random()
+  end
 
-    eggplant = Eggplant:new{
-      id=id,
-      y=math.random(spawnMin/interval, spawnMax/interval)*interval,
-      speed=objectSpeed
-    }
-    EggplantManager.eggplants[id] = eggplant
+  -- drop arc records once their jump moment has passed
+  for i = #EggplantManager.arcs, 1, -1 do
+    if EggplantManager.arcs[i].jumpAt < EggplantManager.clock - 1 then
+      table.remove(EggplantManager.arcs, i)
+    end
   end
 
   for _, eggplant in pairs(EggplantManager.eggplants) do
@@ -37,8 +54,88 @@ function EggplantManager.update(dt)
   end
 end
 
+-- Times along a jump parabola that divide the curve between t0 and t1
+-- into segments of equal absolute (euclidean arc) length, so eggplants
+-- look evenly strung along the arc instead of bunching at the apex.
+-- The curve is (objectSpeed*t, y0 - v*t + g*t^2/2); integrate its speed
+-- sqrt(objectSpeed^2 + (v - g*t)^2) numerically, then invert.
+local function equalSpacedTimes(v, g, t0, t1, count)
+  local steps = 200
+  local dt = (t1 - t0)/steps
+  local lengths = {[0]=0}
+  for i = 1, steps do
+    local tMid = t0 + (i - 0.5)*dt
+    local dy = v - g*tMid
+    lengths[i] = lengths[i - 1] + math.sqrt(objectSpeed^2 + dy^2)*dt
+  end
+
+  local times = {}
+  local j = 1
+  for i = 1, count do
+    local target = lengths[steps]*(i - 1)/(count - 1)
+    while j < steps and lengths[j] < target do j = j + 1 end
+    local segment = lengths[j] - lengths[j - 1]
+    local frac = segment > 0 and (target - lengths[j - 1])/segment or 0
+    times[i] = t0 + (j - 1 + frac)*dt
+  end
+  return times, lengths[steps]
+end
+
+-- Spawn a volley of eggplants along the parabola of a jump with
+-- velocity v: relative to the scrolling world the cat moves right at
+-- objectSpeed, so a single jump of that power (timed to the arc's
+-- takeoff point) sweeps the whole volley. Returns the arc's flight time.
+function EggplantManager.spawnArc()
+  local g = Puppycat.jumpGravity
+  local minV = Puppycat.minJumpVelocity
+  local maxV = Puppycat.maxJumpVelocity * arcMaxPower
+
+  local v, flightTime, arcLength
+  repeat
+    v = minV + (maxV - minV)*love.math.random()
+    flightTime = 2*v/g
+    _, arcLength = equalSpacedTimes(
+      v, g, arcStart*flightTime, arcEnd*flightTime, 2)
+  until arcLength >= minArcLength
+  -- more eggplants on longer arcs: roughly one per 60px of curve
+  local count = math.min(12, math.max(5, math.floor(arcLength/60)))
+  local times = equalSpacedTimes(
+    v, g, arcStart*flightTime, arcEnd*flightTime, count)
+
+  local imageWidth = EggplantManager.image:getWidth()*scale
+  local imageHeight = EggplantManager.image:getHeight()*scale
+  local spawnX = love.graphics.getWidth()
+  local originX, originY = puppycat:getJumpOrigin()
+
+  for i = 1, count do
+    local t = times[i]
+
+    local id = "id"..EggplantManager.index
+    EggplantManager.index = EggplantManager.index + 1
+
+    EggplantManager.eggplants[id] = Eggplant:new{
+      id=id,
+      -- body position is the top-left corner; center the sprite on the arc
+      x=spawnX + objectSpeed*t,
+      y=originY - v*t + g*t*t/2 - imageHeight/2,
+      speed=objectSpeed
+    }
+  end
+
+  -- when the arc's takeoff point scrolls over the cat, a jump of power v
+  -- collects the volley; recorded so tools (e.g. the playtest autopilot)
+  -- can time a perfect jump
+  table.insert(EggplantManager.arcs, {
+    v=v,
+    jumpAt=EggplantManager.clock + (spawnX + imageWidth/2 - originX)/objectSpeed
+  })
+
+  return flightTime
+end
+
 function EggplantManager.start()
-  EggplantManager.nextSpawnTime = os.time() + 1
+  EggplantManager.clock = 0
+  EggplantManager.spawnTimer = 1
 end
 
 function EggplantManager.draw()

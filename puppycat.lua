@@ -5,6 +5,7 @@ local playerHeight = 28
 local minVelocity = 10*m
 local maxVelocity = 36*m
 local chargeSpeed = 48*m
+local gravityScale = 4.2
 local startX = screenWidth / 6
 local startY = screenHeight * 3 / 4
 
@@ -16,6 +17,13 @@ local borderRadius = 0
 local usingFlash = false
 
 Puppycat = {}
+
+-- jump physics, exposed so EggplantManager can place eggplants along
+-- arcs that a single jump can actually trace
+Puppycat.minJumpVelocity = minVelocity
+Puppycat.maxJumpVelocity = maxVelocity
+Puppycat.jumpChargeSpeed = chargeSpeed
+Puppycat.jumpGravity = 9.81*m*gravityScale
 
 function Puppycat:new(o)
   o = o or {}
@@ -29,7 +37,7 @@ function Puppycat:new(o)
   o.animation = anim8.newAnimation(g('1-4',1), 0.1)
 
   o.body = love.physics.newBody(world, 0, startY, "dynamic")
-  o.body:setGravityScale(4.2)
+  o.body:setGravityScale(gravityScale)
 
   o.jumpSound = love.audio.newSource("assets/jump.wav", "static")
   o.collectSound = love.audio.newSource("assets/collect.wav", "static")
@@ -61,6 +69,9 @@ end
 
 function Puppycat:update(dt)
   self.animation:update(dt)
+  if self.touchingGround then
+    self.restY = self.body:getY()
+  end
   local _, linearY = self.body:getLinearVelocity()
   if self.body:getX() < startX then
     self.body:setLinearVelocity(5.0*m, linearY)
@@ -94,6 +105,14 @@ end
 function Puppycat:getCenter()
   local x = self.body:getX() + self.image:getWidth()*scale/2
   local y = self.body:getY() + self.image:getHeight()*scale/2
+  return x, y
+end
+
+-- center of the cat when standing on the floor: the point every jump
+-- parabola starts from and returns to
+function Puppycat:getJumpOrigin()
+  local x = self.body:getX() + self.image:getWidth()*scale/2
+  local y = (self.restY or self.body:getY()) + self.image:getHeight()*scale/2
   return x, y
 end
 
