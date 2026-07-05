@@ -15,6 +15,7 @@ require('tiledscroller')
 require('eggplant')
 require('puppycat')
 require('gamescore')
+require('combo')
 require('startmenu')
 
 
@@ -22,6 +23,7 @@ puppycat = nil
 floorTiles = nil
 backgroundTiles = nil
 gameScore = nil
+gameCombo = nil
 startMenu = nil
 gameStarted = false
 backgroundMusic = nil
@@ -83,6 +85,9 @@ function love.load()
   -- initialize score text
   gameScore = GameScore:new{}
 
+  -- initialize combo tracker
+  gameCombo = GameCombo:new{}
+
   -- initialize start menu
   startMenu = StartMenu:new{active=true}
 
@@ -103,6 +108,7 @@ function love.update(dt)
   startMenu:update(dt)
   if gameStarted then
     EggplantManager.update(dt)
+    gameCombo:update(dt)
   end
   world:update(dt)
 end
@@ -117,6 +123,7 @@ function love.draw()
   if gameStarted then
     EggplantManager.draw()
     gameScore:draw()
+    gameCombo:draw()
   else
     startMenu:draw()
   end

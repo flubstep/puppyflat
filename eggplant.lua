@@ -107,6 +107,9 @@ function EggplantManager.spawnArc()
   local spawnX = love.graphics.getWidth()
   local originX, originY = puppycat:getJumpOrigin()
 
+  -- shared by the volley's eggplants to detect a full sweep for combos
+  local volley = {total=count, collected=0}
+
   for i = 1, count do
     local t = times[i]
 
@@ -118,7 +121,8 @@ function EggplantManager.spawnArc()
       -- body position is the top-left corner; center the sprite on the arc
       x=spawnX + objectSpeed*t,
       y=originY - v*t + g*t*t/2 - imageHeight/2,
-      speed=objectSpeed
+      speed=objectSpeed,
+      volley=volley
     }
   end
 
@@ -198,6 +202,9 @@ end
 
 function Eggplant:update(dt)
   if self.body:getX() < -100 then
+    if not self.collected then
+      gameCombo:breakStreak()
+    end
     self:destroy()
   end
   if self.flashTween then
@@ -220,7 +227,9 @@ function Eggplant:draw()
   if self.active then
     if self.flashTween then
       love.graphics.setColor(0, 0, 0)
-      love.graphics.draw(self.text, self:centerX(), self:centerY()-self.flashRadius)
+      love.graphics.draw(self.text,
+        self:centerX(), self:centerY()-self.flashRadius, 0, 2, 2,
+        self.text:getWidth()/2, self.text:getHeight()/2)
       love.graphics.setColor(255, 255, 255)
     else
       love.graphics.draw(self.image, self.body:getX(), self.body:getY(), 0, scale, scale)
@@ -236,6 +245,16 @@ function Eggplant:startFlash()
 end
 
 function Eggplant:onCollisionBegin(other)
+  if self.collected then
+    return
+  end
+  self.collected = true
+
+  self.volley.collected = self.volley.collected + 1
+  if self.volley.collected == self.volley.total then
+    gameCombo:fullSweep()
+  end
+
   if usingFlash then
     self:startFlash()
   else

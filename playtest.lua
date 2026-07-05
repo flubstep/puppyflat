@@ -69,9 +69,9 @@ love.update = function(dt)
 
   if t - lastLog >= 1.0 then
     lastLog = t
-    print(string.format("[playtest] t=%.2f catX=%.1f catY=%.1f score=%d grounded=%s",
+    print(string.format("[playtest] t=%.2f catX=%.1f catY=%.1f score=%d combo=%d grounded=%s",
       t, puppycat.body:getX(), puppycat.body:getY(),
-      gameScore.score, tostring(puppycat.touchingGround)))
+      gameScore.score, gameCombo.streak, tostring(puppycat.touchingGround)))
   end
 
   if t - lastShot >= shotInterval then
